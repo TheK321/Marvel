@@ -1,15 +1,16 @@
 package com.itz.isc.marvel
 
-import androidx.appcompat.app.AppCompatActivity
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.itz.isc.marvel.databinding.ActivityMainBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.json.JSONTokener
-import java.lang.Exception
 import java.math.BigInteger
 import java.net.URL
 import java.nio.charset.Charset
@@ -69,9 +70,32 @@ class MainActivity : AppCompatActivity() {
             descriptionCharacter = jResults.getJSONObject(index).getString("description")
             binding.nameCharacter.text = nameCharacter
             binding.descriptionCharacter.text = descriptionCharacter
+            val jImage = jResults.getJSONObject(index).getJSONObject("thumbnail")
+            println(jImage)
+            val imgURL = jImage.getString("path")+"/portrait_uncanny."+jImage.getString("extension")
+            println(imgURL)
+            loadImage(imgURL)
 
         }catch (e: Exception){
             e.printStackTrace()
+        }
+    }
+
+    private fun loadImage(url : String){
+        var bitmap : Bitmap? = null
+        lifecycleScope.launch(Dispatchers.IO){
+            try {
+                val imageStream = URL(url).openStream()
+                bitmap = BitmapFactory.decodeStream(imageStream)
+                if(bitmap!=null){
+                    runOnUiThread { binding.imgvPersonaje.setImageBitmap(bitmap) }
+                } else{
+                    runOnUiThread {binding.imgvPersonaje.setImageResource(R.drawable.portrait_xlarge)}
+                }
+            } catch (e : Exception){
+                runOnUiThread {binding.imgvPersonaje.setImageResource(R.drawable.portrait_xlarge)}
+                e.printStackTrace()
+            }
         }
     }
 
